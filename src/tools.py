@@ -1,5 +1,6 @@
 from ipaddress import ip_network, ip_address
 from itertools import islice
+from re import sub as resub
 
 
 def read_file_list(file_path: str) -> list:
@@ -49,6 +50,11 @@ def new_ipv6() -> str:
 def fill_config(filename: str, pair: dict[str, str]) -> str:
     with open(f"template/{filename}") as file:
         content = file.read()
-        for (key, value) in dict.items:
-            content = content.replace(f"!{key.upper()}!", value)
+        for (key, value) in pair.items():
+            if type(value) is str:
+                content = content.replace(f"!{key.upper()}!", value.strip('"'))
+            elif value == None:
+                content = resub(f".*!{key.upper()}!.*\n", "", content)
+            else:
+                raise Exception("Invalid value!")
     return content
