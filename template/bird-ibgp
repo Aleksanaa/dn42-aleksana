@@ -1,0 +1,3 @@
+protocol bgp own!PEER_ABBR! from ownnode {
+    neighbor !PEER_IPV6! as !MY_ASN!;
+}

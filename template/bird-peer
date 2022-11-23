@@ -1,0 +1,8 @@
+protocol bgp !PEER_NAME! from dnpeers {
+    neighbor !PEER_IPV4! as !PEER_ASN!;
+}
+
+protocol bgp !PEER_NAME!_v6 from dnpeers {
+    neighbor !PEER_IPV6! as !PEER_ASN!;
+}
+

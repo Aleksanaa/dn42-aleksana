@@ -1,0 +1,11 @@
+[Interface]
+PrivateKey = !MY_PRIVKEY!
+ListenPort = !MY_ASN_LAST5!
+Address    = !MY_LINK_LOCAL!/64
+Address    = !MY_IPV4!/32
+Table      = off
+
+[Peer]
+PublicKey           = !PEER_PUBKEY!
+Endpoint            = !PEER_LINK!:!MY_PORT!
+AllowedIPs          = 0.0.0.0/0, ::/0
