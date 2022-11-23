@@ -1,6 +1,7 @@
 from ipaddress import ip_network, ip_address
 from itertools import islice
 from re import sub as resub
+from os import path, makedirs
 
 
 def read_file_list(file_path: str) -> list:
@@ -58,3 +59,10 @@ def fill_config(filename: str, pair: dict[str, str]) -> str:
             else:
                 raise Exception("Invalid value!")
     return content
+
+
+def save_config(pathname: str, content: str):
+    makedirs(path.dirname(pathname), exist_ok=True)
+    with open(pathname, "w") as config:
+        config.write(content)
+        config.close()
