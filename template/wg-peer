@@ -1,6 +1,6 @@
 [Interface]
 PrivateKey = !MY_PRIVKEY!
-ListenPort = !PEER_ASN_LAST5!
+ListenPort = !MY_PORT!
 Address    = !MY_LINK_LOCAL!/64
 PostUp     = ip addr add dev %i !MY_IPV4!/32 peer !PEER_IPV4!/32
 PostUp     = ip addr add dev %i !MY_IPV6!/128 peer !PEER_IPV6!/128

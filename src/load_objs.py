@@ -130,8 +130,16 @@ class System:
         for peer_name in peer_names:
             parser = ConfigParser()
             parser.read(f"config/peers/{peer_name}.conf")
-            for node in [node for node in parser.keys() if node != "shared"]:
+            for node in [
+                node for node in parser.keys() if node in self.instances.keys()
+            ]:
                 node_dict = {**parser["shared"], **parser[node]}
-                node_dict = [a for a in node_dict if a != "none"]
+                for key in node_dict.keys():
+                    if node_dict[key] == "none":
+                        node_dict.pop(key)
                 node_dict["name"] = peer_name
                 self.instances[node].add_peer(node_dict)
+
+    def generate(self):
+        self.add_peer()
+        self.full_mesh()
