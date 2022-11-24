@@ -1,6 +1,6 @@
 from configparser import ConfigParser
 from src.tools import fill_config, save_config
-from os import makedirs, listdir
+from os import listdir
 
 
 class Instance:
@@ -28,28 +28,29 @@ class Instance:
             raise Exception(f"generated config for {name} not correct")
 
     def add_mesh(self, peer):
-        if peer != self and (peer.address or self.address):
-            wg_conf = {
-                "my_port": str(10000 + int(peer.digit)) if self.address else None,
-                "peer_pubkey": peer.pubkey,
-                "my_link_local": self.link_local,
-                "my_ipv4": self.ipv4,
-                "peer_link": peer.address,
-                "peer_port": str(10000 + int(self.digit)) if peer.address else None,
+        if peer != self:
+            if peer.address or self.address:
+                wg_conf = {
+                    "my_port": str(10000 + int(peer.digit)) if self.address else None,
+                    "peer_pubkey": peer.pubkey,
+                    "my_link_local": self.link_local,
+                    "my_ipv4": self.ipv4,
+                    "peer_link": peer.address,
+                    "peer_port": str(10000 + int(self.digit)) if peer.address else None,
+                }
+                save_config(
+                    f"{self.gen_path}/etc/wireguard/{peer.name}.own.conf",
+                    fill_config("wg-mesh", wg_conf),
+                )
+            bgp_conf = {
+                "peer_abbr": peer.name,
+                "peer_ipv6": peer.ipv6,
+                "my_asn": self.asn,
             }
             save_config(
-                f"{self.gen_path}/etc/wireguard/{peer.name}.own.conf",
-                fill_config("wg-mesh", wg_conf),
+                f"{self.gen_path}/etc/bird/own/{peer.name}.conf",
+                fill_config("bird-ibgp", bgp_conf),
             )
-        bgp_conf = {
-            "peer_abbr": peer.name,
-            "peer_ipv6": peer.ipv6,
-            "my_asn": self.asn,
-        }
-        save_config(
-            f"{self.gen_path}/etc/bird/own/{peer.name}.conf",
-            fill_config("bird-ibgp", bgp_conf),
-        )
 
     def add_peer(self, peer_dict: dict[str, str]):
         if peer_dict["address"] and self.address:
@@ -69,6 +70,7 @@ class Instance:
                 if "ipv6" in peer_dict and "link_local" not in peer_dict
                 else None,
                 "peer_pubkey": peer_dict["pubkey"],
+                "peer_pskey": peer_dict["pskey"] if "pskey" in peer_dict else None,
                 "peer_link": peer_dict["address"] if "address" in peer_dict else None,
                 "peer_port": peer_dict["port"]
                 if "port" in peer_dict
@@ -78,10 +80,14 @@ class Instance:
                 f"{self.gen_path}/etc/wireguard/{peer_dict['name']}.conf",
                 fill_config("wg-peer", wg_conf),
             )
-            if "link_local" in peer_dict:
+            if "link_local" in peer_dict or (
+                "ipv4" not in peer_dict and "ipv6" not in peer_dict
+            ):
                 bgp_conf = {
                     "peer_name": peer_dict["name"],
-                    "peer_link_local": peer_dict["link_local"],
+                    "peer_link_local": peer_dict["link_local"]
+                    if "link_local" in peer_dict
+                    else f"fe80::{peer_dict['asn'][-4:]}",
                     "peer_asn": peer_dict["asn"],
                     "my_link_local": self.link_local,
                 }
@@ -133,7 +139,11 @@ class System:
             for node in [
                 node for node in parser.keys() if node in self.instances.keys()
             ]:
-                node_dict = {**parser["shared"], **parser[node]}
+                node_dict = (
+                    {**parser["shared"], **parser[node]}
+                    if "shared" in parser.keys()
+                    else parser[node]
+                )
                 for key in node_dict.keys():
                     if node_dict[key] == "none":
                         node_dict.pop(key)
