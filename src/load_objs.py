@@ -11,10 +11,12 @@ class Instance:
         parser = ConfigParser()
         try:
             parser.read(f"config/nodes/{name}.conf")
-            if "address" in parser["main"].keys():
-                self.address = parser["main"]["address"]
-            else:
-                self.address = None
+            self.address4 = (
+                parser["main"]["address"] if "address4" in parser["main"] else None
+            )
+            self.address6 = (
+                parser["main"]["address"] if "address6" in parser["main"] else None
+            )
             self.link_local = parser["main"]["link_local"]
             self.pubkey = parser["main"]["pubkey"]
             self.digit = parser["main"]["digit"]
@@ -29,13 +31,15 @@ class Instance:
 
     def add_mesh(self, peer):
         if peer != self:
-            if peer.address or self.address:
+            if (peer.address4 and self.address4) or (peer.address6 and self.address6):
                 wg_conf = {
                     "my_port": str(10000 + int(peer.digit)) if self.address else None,
                     "peer_pubkey": peer.pubkey,
                     "my_link_local": self.link_local,
                     "my_ipv4": self.ipv4,
-                    "peer_link": peer.address,
+                    "peer_link": (peer.address4 if peer.address4 != "private" else None)
+                    if self.address4
+                    else (peer.address6 if peer.address6 != "private" else None),
                     "peer_port": str(10000 + int(self.digit)) if peer.address else None,
                 }
                 save_config(
@@ -53,13 +57,13 @@ class Instance:
             )
 
     def add_peer(self, peer_dict: dict[str, str]):
-        if peer_dict["address"] and self.address:
+        if peer_dict["address"] or self.address4 or self.address6:
             if peer_dict["asn"].startswith("424242"):
                 my_port = f"2{peer_dict['asn'][-4:]}"
             elif peer_dict["asn"].startswith("420127"):
                 my_port = f"3{peer_dict['asn'][-4:]}"
             wg_conf = {
-                "my_port": my_port if not self.address else None,
+                "my_port": my_port if (self.address4 or self.address6) else None,
                 "my_link_local": self.link_local,
                 "my_ipv4": self.ipv4.rstrip("/32"),
                 "my_ipv6": self.ipv6.rstrip("/64"),
