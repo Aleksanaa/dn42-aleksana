@@ -43,7 +43,7 @@ def new_ipv6() -> str:
     for cidr in read_file_list("config/ipv6_blocks"):
         net = ip_network(cidr)
         for subnet in islice(net.subnets(new_prefix=64), 1, None):
-            if str(subnet).split("/")[0] not in used_subnets:
+            if str(subnet) not in used_subnets:
                 return str(subnet)
     raise Exception("No ipv6 address available!")
 
@@ -66,3 +66,6 @@ def save_config(pathname: str, content: str):
     with open(pathname, "w") as config:
         config.write(content)
         config.close()
+
+
+print(new_ipv6())

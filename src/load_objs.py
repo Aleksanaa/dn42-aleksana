@@ -61,8 +61,8 @@ class Instance:
             wg_conf = {
                 "my_port": my_port if not self.address else None,
                 "my_link_local": self.link_local,
-                "my_ipv4": self.ipv4,
-                "my_ipv6": self.ipv6,
+                "my_ipv4": self.ipv4.rstrip("/32"),
+                "my_ipv6": self.ipv6.rstrip("/64"),
                 "peer_ipv4": peer_dict["ipv4"]
                 if "ipv4" in peer_dict and "link_local" not in peer_dict
                 else None,
