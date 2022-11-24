@@ -53,7 +53,7 @@ And the rules:
 
 This is another example, which peers with DN42 address instead of link-local one.
 
-```
+```ini
 # config/peers/<your nickname>.conf
 
 [lax]
