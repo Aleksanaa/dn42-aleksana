@@ -1,60 +1,56 @@
-from configparser import ConfigParser
-from src.tools import fill_config, save_config
-from os import listdir
+from src.tools import Artifact, Config
+from pathlib import Path
 
 
 class Instance:
     def __init__(self, name: str, asn: str) -> None:
         self.name = name
         self.asn = asn
-        self.gen_path = f"artifacts/{name}"
-        parser = ConfigParser()
         try:
-            parser.read(f"config/nodes/{name}.conf")
-            self.address4 = (
-                parser["main"]["address"] if "address4" in parser["main"] else None
-            )
-            self.address6 = (
-                parser["main"]["address"] if "address6" in parser["main"] else None
-            )
-            self.link_local = parser["main"]["link_local"]
-            self.pubkey = parser["main"]["pubkey"]
-            self.digit = parser["main"]["digit"]
+            config = Config(f"config/nodes/{name}.conf").content["main"]
+            self.address4 = config["address4"] if "address4" in config else None
+            self.address6 = config["address6"] if "address6" in config else None
+            self.link_local = config["link_local"]
+            self.pubkey = config["pubkey"]
+            self.digit = config["digit"]
         except:
             raise Exception(f"config for {name} not correct")
         try:
-            parser.read(f"generated/nodes/{name}.conf")
-            self.ipv4 = parser["main"]["my_ipv4"]
-            self.ipv6 = parser["main"]["my_ipv6"]
+            generated = Config(f"generated/nodes/{name}.conf").content["main"]
+            self.ipv4 = generated["my_ipv4"]
+            self.ipv6 = generated["my_ipv6"]
         except:
             raise Exception(f"generated config for {name} not correct")
+
+    def save(self, template: str, pathname: str, pair: dict[str, str]):
+        artifact = Artifact(pathname, self.name)
+        artifact.fill(template, pair)
+        artifact.save()
 
     def add_mesh(self, peer):
         if peer != self:
             if (peer.address4 and self.address4) or (peer.address6 and self.address6):
                 wg_conf = {
-                    "my_port": str(10000 + int(peer.digit)) if self.address else None,
+                    "my_port": str(10000 + int(peer.digit))
+                    if self.address4 or self.address6
+                    else None,
                     "peer_pubkey": peer.pubkey,
                     "my_link_local": self.link_local,
                     "my_ipv4": self.ipv4,
                     "peer_link": (peer.address4 if peer.address4 != "private" else None)
                     if self.address4
                     else (peer.address6 if peer.address6 != "private" else None),
-                    "peer_port": str(10000 + int(self.digit)) if peer.address else None,
+                    "peer_port": str(10000 + int(self.digit))
+                    if peer.address4 or peer.address6
+                    else None,
                 }
-                save_config(
-                    f"{self.gen_path}/etc/wireguard/{peer.name}.own.conf",
-                    fill_config("wg-mesh", wg_conf),
-                )
+                self.save("wg-mesh", f"/etc/wireguard/{peer.name}.own.conf", wg_conf)
             bgp_conf = {
                 "peer_abbr": peer.name,
                 "peer_ipv6": peer.ipv6,
                 "my_asn": self.asn,
             }
-            save_config(
-                f"{self.gen_path}/etc/bird/own/{peer.name}.conf",
-                fill_config("bird-ibgp", bgp_conf),
-            )
+            self.save("bird-ibgp", f"/etc/bird/own/{peer.name}.conf", bgp_conf)
 
     def add_peer(self, peer_dict: dict[str, str]):
         if peer_dict["address"] or self.address4 or self.address6:
@@ -80,10 +76,7 @@ class Instance:
                 if "port" in peer_dict
                 else f"2{self.asn[-4:]}",
             }
-            save_config(
-                f"{self.gen_path}/etc/wireguard/{peer_dict['name']}.conf",
-                fill_config("wg-peer", wg_conf),
-            )
+            self.save("wg-peer", f"/etc/wireguard/{peer_dict['name']}.conf", wg_conf)
             if "link_local" in peer_dict or (
                 "ipv4" not in peer_dict and "ipv6" not in peer_dict
             ):
@@ -95,8 +88,15 @@ class Instance:
                     "peer_asn": peer_dict["asn"],
                     "my_link_local": self.link_local,
                 }
-                config_content = fill_config("bird-peer-ll", bgp_conf)
+                self.save(
+                    "bird-peer-ll",
+                    f"/etc/bird/peers/{peer_dict['name']}.conf",
+                    bgp_conf,
+                )
             else:
+                artifact = Artifact(
+                    f"/etc/bird/peers/{peer_dict['name']}.conf", self.name
+                )
                 bgp_conf = {
                     "peer_name": peer_dict["name"],
                     "peer_ipv4": peer_dict["ipv4"] if "ipv4" in peer_dict else None,
@@ -105,22 +105,15 @@ class Instance:
                 }
                 config_content = ""
                 if "ipv4" in peer_dict:
-                    config_content += fill_config("bird-peer-v4", bgp_conf)
+                    config_content += artifact.fill("bird-peer-v4", bgp_conf)
                 if "ipv6" in peer_dict:
-                    config_content += fill_config("bird-peer-v6", bgp_conf)
-            save_config(
-                f"{self.gen_path}/etc/bird/peers/{peer_dict['name']}.conf",
-                config_content,
-            )
+                    config_content += artifact.fill("bird-peer-v6", bgp_conf)
+                artifact.save()
 
 
 class System:
     def __init__(self) -> None:
-        instance_names = [
-            path.rstrip(".conf")
-            for path in listdir("generated/nodes")
-            if path.endswith(".conf")
-        ]
+        instance_names = [path.stem for path in Path("generated/nodes").glob("*.conf")]
         self.instances = {}
         self.asn = open("config/my_asn").read().strip()
         for name in instance_names:
@@ -132,26 +125,9 @@ class System:
                 instance.add_mesh(other)
 
     def add_peer(self):
-        peer_names = [
-            path.rstrip(".conf")
-            for path in listdir("config/peers")
-            if path.endswith(".conf")
-        ]
-        for peer_name in peer_names:
-            parser = ConfigParser()
-            parser.read(f"config/peers/{peer_name}.conf")
-            for node in [
-                node for node in parser.keys() if node in self.instances.keys()
-            ]:
-                node_dict = (
-                    {**parser["shared"], **parser[node]}
-                    if "shared" in parser.keys()
-                    else parser[node]
-                )
-                for key in node_dict.keys():
-                    if node_dict[key] == "none":
-                        node_dict.pop(key)
-                node_dict["name"] = peer_name
+        for peer_file in Path("config/peers").glob("*.conf"):
+            for node, node_dict in Config(peer_file).content.items():
+                node_dict["name"] = peer_file.stem
                 self.instances[node].add_peer(node_dict)
 
     def generate(self):

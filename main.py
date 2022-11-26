@@ -1,3 +1,3 @@
-from src.load_objs import System
+from src.artifact import System
 
 System().generate()
