@@ -10,7 +10,7 @@ from pathlib import Path
 
 def read_file_list(file_path: str) -> list:
     with open(file_path) as file:
-        file_list = [item.strip() for item in file.readlines()]
+        file_list = [item.strip() for item in file.readlines() if item]
     return file_list
 
 
@@ -112,7 +112,7 @@ class Artifact:
         self.cache = ""
 
     def fill(self, template_name: str, pair: dict[str, str]):
-        content = Path(f"template/{template_name}").open().read()
+        content = Path(f"template/{template_name}").read_text()
         for (key, value) in pair.items():
             if type(value) is str:
                 content = content.replace(f"!{key.upper()}!", value.strip('"'))
@@ -124,6 +124,4 @@ class Artifact:
 
     def save(self):
         self.destination.parent.mkdir(exist_ok=True, parents=True)
-        with self.destination.open(mode="w") as config:
-            config.write(self.cache)
-            config.close()
+        self.destination.write_text(self.cache)
