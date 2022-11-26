@@ -1,5 +1,6 @@
 from src.tools import Artifact, Config
 from pathlib import Path
+from src.assign_ip import assign
 
 
 class Instance:
@@ -15,6 +16,8 @@ class Instance:
             self.digit = config["digit"]
         except:
             raise Exception(f"config for {name} not correct")
+        if not Path(f"generated/nodes/{name}.conf").exists():
+            assign(self.name)
         try:
             generated = Config(f"generated/nodes/{name}.conf").content["main"]
             self.ipv4 = generated["my_ipv4"]
@@ -113,7 +116,7 @@ class Instance:
 
 class System:
     def __init__(self) -> None:
-        instance_names = [path.stem for path in Path("generated/nodes").glob("*.conf")]
+        instance_names = [path.stem for path in Path("config/nodes").glob("*.conf")]
         self.instances = {}
         self.asn = open("config/my_asn").read().strip()
         for name in instance_names:
