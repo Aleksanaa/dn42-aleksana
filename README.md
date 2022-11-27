@@ -7,18 +7,16 @@ I use github workflow to generate wireguard and bird config files, and set cron 
 The peer config file is designed to be as simple as possible. Below is a valid config file which defines two peers with my Los Angeles and Montreal node:
 
 ```ini
-# config/peers/amemiya.conf
-
 [shared]
-asn = 4242422464
+asn = 4242422562
 
 [lax]
-address = las.dneo.moeternet.com
-pubkey = viR4CoaJTBHROo/Bgbb27hQ2ttr8AbByGY/yOz3D3GY=
+address = las.innocent.neko.com
+pubkey = VRNde3NgskHROo/edwed7y6gdeMskSM/GY/yOqdewde=
 
 [mtl]
-address = nyc.dneo.moeternet.com
-pubkey = KLF+h2/4FG5IjmVrywonwLP30slUzuoeRIb3e+awklY=
+address = nyc.innocent.neko.com
+pubkey = qWEsh2/4dewejmVrywDcd/oiwwlUzuHsWId3e+awklN=
 ```
 
 Begin with a common practice. To peer with a node with link-local address (then you'd better have `extended next hop on`), you can set:
