@@ -8,4 +8,4 @@ if argv[1] == "generate":
     System().generate()
 
 if argv[1] == "check":
-    print(Check(Path("config/peers/amemiya.conf")).check())
+    print(Check(Path(argv[2])).check())

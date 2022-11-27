@@ -1,0 +1,41 @@
+name: PR check
+on:
+  pull_request_target:
+    paths:
+      - "config/peers/**.conf"
+
+jobs:
+  check-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+
+      - name: Get Changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v34
+
+      - name: Determine if correct
+        run: |
+          filename=${{ steps.changed-files.outputs.all_changed_files }}
+          if [[ ${filename} = *" "* ]]; then
+            echo -e "FILENAME=${filename}" >> ${{ env.GITHUB_ENV }}
+          fi
+
+      - name: Execute Python Script
+        run: |
+          filename=${{ env.FILENAME }}
+          if [[ -n ${filename} ]]; then
+            echo -e "CHECK_RESULT=$(python3 main.py check ${filename})" >> ${{ env.GITHUB_ENV }}
+          else;
+            echo -e "CHECK_RESULT='🌚 Please commit one file for each Pull Request!'" >> ${{ env.GITHUB_ENV }}
+          fi
+
+      - name: Comment the PR
+        uses: thollander/actions-comment-pull-request@v1
+        with:
+          message: ${{ env.CHECK_RESULT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
