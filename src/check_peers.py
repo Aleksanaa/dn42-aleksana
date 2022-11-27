@@ -116,10 +116,10 @@ class Check:
     def is_valid_link_local(self, ip: str):
         link_local = "fe80::/16"
         try:
-            if IPv6Address(ip) in ip_network(link_local):
-                self.log["error"]["invalid_dn42_ipv6"].append(ip)
+            if IPv6Address(ip) not in ip_network(link_local):
+                self.log["error"]["invalid_link_local"].append(ip)
         except AddressValueError:
-            self.log["error"]["invalid_dn42_ipv6"].append(ip)
+            self.log["error"]["invalid_link_local"].append(ip)
 
     def is_valid_asn(self, asn: str):
         dn42_regex = "^((424242)|(420127))[0-9]{4}$"
@@ -220,6 +220,7 @@ class Check:
         "alone_port": "Port specified in %s but address doesn't. Consider removing it or adding address.",
         "invalid_dn42_ipv4": "IPv4 addresses %s don't seem to be valid DN42 or NeoNetwork IPv4 addresses.",
         "invalid_dn42_ipv6": "IPv6 addresses %s don't seem to be valid DN42 or NeoNetwork IPv6 addresses.",
+        "invalid_link_local": "Link-local addresses %s don't seem to be valid.",
         "invalid_dn42_asn": "ASNs %s don't seem to be valid DN42 or NeoNetwork ASNs.",
         "invalid_port": "Ports %s don't seem to be valid port numbers.",
         "invalid_wg_key": "Wireguard keys %s don't seem to be valid.",

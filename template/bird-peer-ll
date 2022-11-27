@@ -1,4 +1,4 @@
 protocol bgp !PEER_NAME! from dnpeers {
-    neighbor !PEER_LINK_LOCAL! % '!PEER_NAME!' as !PEER_ASN!;
+    neighbor !PEER_LINK_LOCAL! % 'peer-!PEER_NAME!' as !PEER_ASN!;
     source address !MY_LINK_LOCAL!;
 }

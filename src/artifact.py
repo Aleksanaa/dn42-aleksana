@@ -47,7 +47,7 @@ class Instance:
                     if peer.address4 or peer.address6
                     else None,
                 }
-                self.save("wg-mesh", f"/etc/wireguard/{peer.name}.own.conf", wg_conf)
+                self.save("wg-mesh", f"/etc/wireguard/own-{peer.name}.conf", wg_conf)
             bgp_conf = {
                 "peer_abbr": peer.name,
                 "peer_ipv6": peer.ipv6,
@@ -56,7 +56,7 @@ class Instance:
             self.save("bird-ibgp", f"/etc/bird/own/{peer.name}.conf", bgp_conf)
 
     def add_peer(self, peer_dict: dict[str, str]):
-        if peer_dict["address"] or self.address4 or self.address6:
+        if "address" in peer_dict or self.address4 or self.address6:
             if peer_dict["asn"].startswith("424242"):
                 my_port = f"2{peer_dict['asn'][-4:]}"
             elif peer_dict["asn"].startswith("420127"):
@@ -79,7 +79,7 @@ class Instance:
                 if "port" in peer_dict
                 else f"2{self.asn[-4:]}",
             }
-            self.save("wg-peer", f"/etc/wireguard/{peer_dict['name']}.conf", wg_conf)
+            self.save("wg-peer", f"/etc/wireguard/peer-{peer_dict['name']}.conf", wg_conf)
             if "link_local" in peer_dict or (
                 "ipv4" not in peer_dict and "ipv6" not in peer_dict
             ):
@@ -106,11 +106,10 @@ class Instance:
                     "peer_ipv6": peer_dict["ipv6"] if "ipv6" in peer_dict else None,
                     "peer_asn": peer_dict["asn"],
                 }
-                config_content = ""
                 if "ipv4" in peer_dict:
-                    config_content += artifact.fill("bird-peer-v4", bgp_conf)
+                    artifact.fill("bird-peer-v4", bgp_conf)
                 if "ipv6" in peer_dict:
-                    config_content += artifact.fill("bird-peer-v6", bgp_conf)
+                    artifact.fill("bird-peer-v6", bgp_conf)
                 artifact.save()
 
 
