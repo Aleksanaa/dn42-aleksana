@@ -34,7 +34,9 @@ jobs:
         run: |
           filename=${{ env.FILENAME }}
           if [[ -n ${filename} ]]; then
-            echo -e "CHECK_RESULT=$(python3 main.py check ${filename})" >> $GITHUB_ENV
+            echo  "CHECK_RESULT<<EOF" >> $GITHUB_ENV
+            echo -e "$(python3 main.py check ${filename})" >> $GITHUB_ENV
+            echo  "EOF" >> $GITHUB_ENV
           else
             echo -e "CHECK_RESULT='🌚 Please commit one file for each Pull Request!'" >> $GITHUB_ENV
           fi
