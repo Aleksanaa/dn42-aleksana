@@ -24,16 +24,16 @@ jobs:
         run: |
           filename="${{ steps.changed-files.outputs.all_changed_files }}"
           if [[ ! ${filename} = *" "* ]]; then
-            echo -e "FILENAME=${filename}" >> ${{ env.GITHUB_ENV }}
+            echo -e "FILENAME=${filename}" >> $$GITHUB_ENV
           fi
 
       - name: Execute Python Script
         run: |
           filename=${{ env.FILENAME }}
           if [[ -n ${filename} ]]; then
-            echo -e "CHECK_RESULT=$(python3 main.py check ${filename})" >> ${{ env.GITHUB_ENV }}
+            echo -e "CHECK_RESULT=$(python3 main.py check ${filename})" >> $GITHUB_ENV
           else;
-            echo -e "CHECK_RESULT='🌚 Please commit one file for each Pull Request!'" >> ${{ env.GITHUB_ENV }}
+            echo -e "CHECK_RESULT='🌚 Please commit one file for each Pull Request!'" >> $GITHUB_ENV
           fi
 
       - name: Comment the PR
