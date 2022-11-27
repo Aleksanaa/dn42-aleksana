@@ -208,7 +208,7 @@ class Check:
         for log_type in ["error", "warning", "note"]:
             for key, val_list in self.log[log_type].items():
                 result += self.form_message(log_type, self.messages[key], val_list)
-                result += "\n"
+                result += "\n\n"
         return result
 
     messages = {
