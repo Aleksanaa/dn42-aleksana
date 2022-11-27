@@ -1,10 +1,11 @@
 from src.artifact import System
-from src.check_peers import Peer
+from src.check_peers import Check
 
 from sys import argv
+from pathlib import Path
 
 if argv[1] == "generate":
     System().generate()
 
 if argv[1] == "check":
-    Peer(argv[2]).check_all()
+    print(Check(Path("config/peers/amemiya.conf")).check())

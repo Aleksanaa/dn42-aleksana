@@ -87,7 +87,7 @@ class Instance:
                     "peer_name": peer_dict["name"],
                     "peer_link_local": peer_dict["link_local"]
                     if "link_local" in peer_dict
-                    else f"fe80::{peer_dict['asn'][-4:]}",
+                    else f"fe80::{peer_dict['asn'][-4:].lstrip('0')}",
                     "peer_asn": peer_dict["asn"],
                     "my_link_local": self.link_local,
                 }
