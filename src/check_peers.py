@@ -198,11 +198,10 @@ class Check:
         return result
 
     def check(self) -> str:
-        self.check_all_error()
-        # try:
-        #    self.check_all_error()
-        # except Exception as e:
-        #    self.log["error"]["unexpected_error"].append(str(e))
+        try:
+            self.check_all_error()
+        except Exception as e:
+            self.log["error"]["unexpected_error"].append(str(e))
         result = ""
         for log_type in ["error", "warning", "note"]:
             for key, val_list in self.log[log_type].items():
