@@ -112,7 +112,7 @@ class Check:
             self.log["error"]["invalid_dn42_ipv6"].append(ipv6)
 
     def is_valid_link_local(self, ip: str):
-        link_local = "fe80::/8"
+        link_local = "fe80::/16"
         try:
             if IPv6Address(ip) in ip_network(link_local):
                 self.log["error"]["invalid_dn42_ipv6"].append(ip)
