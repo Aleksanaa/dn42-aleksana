@@ -22,8 +22,8 @@ jobs:
 
       - name: Determine if correct
         run: |
-          filename=${{ steps.changed-files.outputs.all_changed_files }}
-          if [[ ${filename} = *" "* ]]; then
+          filename="${{ steps.changed-files.outputs.all_changed_files }}"
+          if [[ ! ${filename} = *" "* ]]; then
             echo -e "FILENAME=${filename}" >> ${{ env.GITHUB_ENV }}
           fi
 
