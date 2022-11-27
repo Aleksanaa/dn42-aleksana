@@ -86,6 +86,8 @@ class Check:
                 and "ipv6" not in section
             ):
                 self.log["note"]["default_link_local"].append(name)
+            if "port" not in section and "address" not in section:
+                self.log["note"]["passive_connect"].append(name)
 
     def is_valid_dn42_ipv4(self, ipv4: str):
         dn42_net4 = [ip_network(ip) for ip in dn42_ipv4]
@@ -228,4 +230,5 @@ class Check:
         "port_can_ignore": "ports %s can be ignored because they are in the same format often provided by dn42 users.",
         "alone_address": "Port doesn't specified in %s. Will pick default port. (see README)",
         "default_link_local": "Link-local address not specified in %s. Will pick default one. (see README)",
+        "passive_connect": "Config for nodes %s do not include addresses. I'll not configure endpoint for this node.",
     }
