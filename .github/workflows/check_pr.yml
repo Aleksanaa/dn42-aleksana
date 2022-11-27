@@ -24,7 +24,7 @@ jobs:
         run: |
           filename="${{ steps.changed-files.outputs.all_changed_files }}"
           if [[ ! ${filename} = *" "* ]]; then
-            echo -e "FILENAME=${filename}" >> $$GITHUB_ENV
+            echo -e "FILENAME=${filename}" >> $GITHUB_ENV
           fi
 
       - name: Execute Python Script
