@@ -88,6 +88,8 @@ class Check:
                 self.log["note"]["default_link_local"].append(name)
             if "port" not in section and "address" not in section:
                 self.log["note"]["passive_connect"].append(name)
+            if "pskey" in section:
+                self.log["warning"]["pskey_not_recommended"].append(name)
 
     def is_valid_dn42_ipv4(self, ipv4: str):
         dn42_net4 = [ip_network(ip) for ip in dn42_ipv4]
@@ -227,6 +229,7 @@ class Check:
         "invalid_address": "Address %s invalid. This may be because the IP or domain you provide mismatch with my node's. Check README for more information.",
         "unexpected_error": "An error %s happened unexpectedly.",
         "ignoring_dn42_ip": "IP addresses in section %s will be ignored in favor of link-local address. Please remove them if this is intended.",
+        "pskey_not_recommended": "The preshared key has been used for %s. It is not recommended to use here as meant to be private.",
         "link_local_can_ignore": "link-local address %s can be ignored because they are in the same format often provided by dn42 users.",
         "port_can_ignore": "ports %s can be ignored because they are in the same format often provided by dn42 users.",
         "alone_address": "Port doesn't specified in %s. Will pick default port. (see README)",

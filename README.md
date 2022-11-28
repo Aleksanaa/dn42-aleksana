@@ -47,7 +47,7 @@ And the rules:
 
 6. If the port you provide is `2<my asn last 4 digits>`, in this case `20365`, you can skip it as well. If you do not want to provide an address, the port should also be ignored.
 
-7. The preshared key is not necessary. Write it if you want to set one.
+7. The preshared key is not recommended to use because it is meant to be private. However, if you still want to include it for some reasons, you can still write it there.
 
 This is another example, which peers with DN42 address instead of link-local one.
 
