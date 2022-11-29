@@ -18,14 +18,18 @@ genkey() {
 }
 
 pubkey() {
-    b64join ${private_key_head} ${2} \
+    b64join ${private_key_head} ${1} \
     | openssl pkey -inform DER -outform DER -pubout \
     | tail -c 32 | base64
 }
 
 exchange_key() {
     openssl pkeyutl -derive \
-      -keyform DER -inkey <(b64join ${private_head} ${2}) \
-      -peerform DER -peerkey <(b64join ${public_head} ${3} | sed 's/K$/=/') \
+      -keyform DER -inkey <(b64join ${private_head} ${1}) \
+      -peerform DER -peerkey <(b64join ${public_head} ${2} | sed 's/K$/=/') \
     | base64
+}
+
+decrypt_file() {
+    openssl aes-256-cbc -d -a -k ${1} -in ${1} -out ${2}
 }
